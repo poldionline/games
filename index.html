@@ -1,11 +1,13 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Arena Brawl 3D</title><style>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Arena Brawl"><meta name="theme-color" content="#061309"><meta name="format-detection" content="telephone=no"><title>Arena Brawl 3D</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#061309;overflow:hidden;touch-action:none;font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#fff}
-#game{position:relative;width:100vw;height:100vh;overflow:hidden}
+html,body{width:100%;height:100%;background:#061309;overflow:hidden;touch-action:none;overscroll-behavior:none;-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#fff}
+body{position:fixed;inset:0}
+button{touch-action:manipulation;font-family:inherit;cursor:pointer}
+#game{position:fixed;inset:0;width:100%;height:100%;height:100dvh;overflow:hidden;touch-action:none}
 #three-wrap{position:absolute;inset:0}
 #ui{position:absolute;inset:0;pointer-events:none}
 canvas{display:block;width:100%;height:100%}
-#hud{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;padding:10px 18px;display:flex;justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none}
+#hud{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;padding:10px max(18px,env(safe-area-inset-left,0px)) 10px max(18px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:flex-start;z-index:5;pointer-events:none}
 #hudLeft{display:flex;gap:8px}
 #hudRight{display:flex;flex-direction:column;gap:5px;align-items:flex-end}
 #kills{font-size:14px;font-weight:800;background:#00000077;padding:5px 10px;border-radius:8px}
@@ -30,7 +32,7 @@ canvas{display:block;width:100%;height:100%}
 #fireBtn.manual{background:radial-gradient(circle at 35% 30%,#fff,#cbd5e1);border-color:#1f2937}
 #teamTag{position:absolute;top:calc(env(safe-area-inset-top,0px) + 54px);left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;background:#00000077;padding:3px 10px;border-radius:8px;display:none;z-index:5}
 
-#overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;z-index:10;background:radial-gradient(ellipse at 50% -10%,#14391f 0%,#061309 60%);overflow-y:auto;padding:0 0 30px}
+#overlay{touch-action:pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;z-index:10;background:radial-gradient(ellipse at 50% -10%,#14391f 0%,#061309 60%);overflow-y:auto;padding:0 0 30px}
 #overlay.hidden{display:none}
 #menuHeader{width:100%;padding:calc(env(safe-area-inset-top,0px) + 16px) 20px 10px;text-align:center;position:sticky;top:0;background:linear-gradient(#0a2010 60%,transparent);z-index:2}
 #menuHeader h1{font-size:25px;margin-bottom:2px;background:linear-gradient(90deg,#4ade80,#facc15);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.5px}
@@ -88,6 +90,41 @@ canvas{display:block;width:100%;height:100%}
 #roomCodeInput{background:#06230f;border:1.5px solid #4ade8066;color:#fff;border-radius:10px;padding:11px 14px;font-size:14px;text-align:center;width:100%}
 #roomCodeInput::placeholder{color:#ffffff77}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:.75;z-index:20;text-align:center;padding:30px;background:#061309}
+
+@media (min-width:700px) and (min-height:500px){
+#hud{padding-top:14px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+#kills,#timer{font-size:20px;padding:8px 14px;border-radius:11px}
+#hpWrap{width:240px;height:20px;border-radius:11px}
+#superWrap{width:240px;height:13px}
+.pip{width:24px;height:13px;border-radius:4px}
+#ammoNum{font-size:15px;padding:4px 10px}
+#teamTag{font-size:15px;padding:5px 14px;top:calc(env(safe-area-inset-top,0px) + 66px)}
+#fireBtn{width:150px;height:150px;font-size:52px;right:calc(env(safe-area-inset-right,0px) + 44px);bottom:calc(env(safe-area-inset-bottom) + 44px)}
+#superBtn{width:86px;height:86px;font-size:36px;right:calc(env(safe-area-inset-right,0px) + 200px);bottom:calc(env(safe-area-inset-bottom) + 70px)}
+#gadgetBtn{width:76px;height:76px;font-size:30px;right:calc(env(safe-area-inset-right,0px) + 70px);left:auto;bottom:calc(env(safe-area-inset-bottom) + 210px)}
+#leaveBtn{font-size:16px;padding:10px 24px;bottom:calc(env(safe-area-inset-bottom) + 16px)}
+#menuBody{max-width:600px;padding:20px 28px 10px}
+#menuHeader h1{font-size:36px}#menuHeader .sub{font-size:14px}
+#desc{font-size:16px;max-width:520px}
+.sectionCard{padding:22px}
+.sectionTitle{font-size:13px}
+.brawlerBtn{width:68px;height:68px;font-size:25px}
+.lvlBadge{font-size:11px;padding:2px 6px}
+.brawlerLabel{font-size:13px}
+#brawlerRow{gap:14px}
+#detailName{font-size:22px}#detailRole{font-size:13px}
+.statRow{font-size:14px}.statLabel{width:62px}.statBarWrap{height:10px}
+#upgradeBtn{font-size:16px;padding:14px 20px}
+.abilityRow{font-size:14px;padding:11px 14px}
+.abilityText b{font-size:14px}.abilityText span{font-size:12px}
+.miniBtn{font-size:13px;padding:10px 15px}
+.modeBtn{font-size:18px;padding:18px 24px}
+#roomCodeInput{font-size:17px;padding:14px 16px}
+#coinBadge{font-size:17px;padding:8px 18px}
+}
+@media (orientation:landscape) and (max-height:520px){
+#menuBody{max-width:520px}
+}
 </style></head><body>
 <div id="game">
 <div id="loading">Lädt 3D-Arena…</div>
@@ -273,7 +310,7 @@ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 threeWrap.appendChild(renderer.domElement);
 scene=new THREE.Scene();
 camera=new THREE.PerspectiveCamera(52,1,0.5,120);
-window.addEventListener('resize',resize);
+window.addEventListener('resize',()=>{});
 
 scene.add(new THREE.AmbientLight(0x4a5a4a,1.2));
 const dl=new THREE.DirectionalLight(0xfff6e0,0.75);
@@ -393,7 +430,8 @@ function makeRock(r){
 }
 
 function setupArenaCommon(){
-  ARENA_W=W*ARENA_MULT;ARENA_H=H*ARENA_MULT;
+  const fitK=Math.min(1,1000/Math.hypot(W,H));
+  ARENA_W=W*ARENA_MULT*fitK;ARENA_H=H*ARENA_MULT*fitK;
   ORIGIN_X=(ARENA_W/2)*SCALE;ORIGIN_Z=(ARENA_H/2)*SCALE;
   clearField();
 
@@ -408,7 +446,7 @@ function setupArenaCommon(){
 
   // camera framing is based on the *screen* size (how zoomed-in the follow-cam
   // feels), independent of the much larger arena/world it moves around in
-  const screenDiag=Math.hypot(W*SCALE,H*SCALE);
+  const screenDiag=Math.hypot(W*SCALE,H*SCALE)*fitK;
   camOffsetY=screenDiag*0.34;camOffsetZ=screenDiag*0.27;
   camera.position.set(0,camOffsetY,camOffsetZ);
   camera.lookAt(0,0,0);
@@ -900,16 +938,21 @@ function syncMeshes(){
 }
 
 // ---------------- 2D overlay (move joystick + hp bars/particles/popups) ----------------
-const JR=52;
-let moveBase;
-function layoutJoysticks(){moveBase={x:JR+26,y:H-JR-24};}
+let JR=52;
+let moveBase,defaultBase;
+function layoutJoysticks(){
+  JR=(W>=700&&H>=500)?72:52;
+  const insL=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sal'))||0;
+  defaultBase={x:JR+Math.max(34,insL+20),y:H-JR-Math.max(34,0)-14};
+  if(![...touches.values()].some(t=>t.type==='move'))moveBase={x:defaultBase.x,y:defaultBase.y};
+}
 let moveVec={x:0,y:0};
-const touches=new Map();
+var touches=new Map();
 
 function drawStick(base,dx,dy,active,color){
   uctx.beginPath();uctx.arc(base.x,base.y,JR,0,7);uctx.fillStyle='rgba(255,255,255,0.10)';uctx.fill();uctx.strokeStyle='rgba(255,255,255,0.25)';uctx.lineWidth=2;uctx.stroke();
   const kx=base.x+dx*JR*0.6,ky=base.y+dy*JR*0.6;
-  uctx.beginPath();uctx.arc(kx,ky,22,0,7);uctx.fillStyle=active?color:'rgba(255,255,255,0.35)';uctx.fill();
+  uctx.beginPath();uctx.arc(kx,ky,JR*0.42,0,7);uctx.fillStyle=active?color:'rgba(255,255,255,0.35)';uctx.fill();
 }
 function drawHpBar(sp,pct,color){
   const bw=40;
@@ -982,14 +1025,15 @@ function drawOverlay(){
   }
 }
 
-function clearTouches(){touches.clear();moveVec={x:0,y:0};}
+function clearTouches(){touches.clear();moveVec={x:0,y:0};if(defaultBase)moveBase={x:defaultBase.x,y:defaultBase.y};}
 
 gameEl.addEventListener('pointerdown',e=>{
   if(!running)return;
   const r=gameEl.getBoundingClientRect();
   const px=e.clientX-r.left,py=e.clientY-r.top;
-  if(dist(px,py,moveBase.x,moveBase.y)>JR*1.6)return;
+  if(px>W*0.5||py<90)return;
   if([...touches.values()].some(t=>t.type==='move'))return;
+  moveBase={x:Math.max(JR+10,Math.min(W*0.5-10,px)),y:Math.max(JR+10,Math.min(H-JR-10,py))};
   try{gameEl.setPointerCapture(e.pointerId)}catch(err){}
   touches.set(e.pointerId,{type:'move'});
 });
@@ -1005,6 +1049,7 @@ function releaseMoveTouch(e){
   const t=touches.get(e.pointerId);if(!t)return;
   touches.delete(e.pointerId);
   moveVec={x:0,y:0};
+  if(defaultBase)moveBase={x:defaultBase.x,y:defaultBase.y};
 }
 gameEl.addEventListener('pointerup',releaseMoveTouch);
 gameEl.addEventListener('pointercancel',releaseMoveTouch);
@@ -1157,7 +1202,13 @@ leaveBtn.addEventListener('click',showStartMenu);
 
 resize();
 layoutJoysticks();
-window.addEventListener('resize',layoutJoysticks);
+function refit(){resize();layoutJoysticks();}
+window.addEventListener('resize',refit);
+window.addEventListener('orientationchange',()=>setTimeout(refit,250));
+if(window.visualViewport)window.visualViewport.addEventListener('resize',refit);
+['gesturestart','gesturechange','gestureend'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
+document.addEventListener('touchmove',e=>{if(!e.target.closest||!e.target.closest('#overlay'))e.preventDefault();},{passive:false});
+document.addEventListener('dblclick',e=>e.preventDefault());
 loading.style.display='none';
 saveCoins();
 showStartMenu();
