@@ -813,12 +813,25 @@ function endGame(won){
 // ---------------- multiplayer: serverless WebRTC via Trystero (BitTorrent signaling) ----------------
 async function connectMultiplayer(code){
   try{
-    const mod=await import('https://cdn.jsdelivr.net/npm/@trystero-p2p/torrent@0.25.2/+esm');
-    const joinRoom=mod.joinRoom;
-    if(typeof joinRoom!=='function')throw new Error('joinRoom missing');
+    let joinRoom=null,lastErr=null;
+    const urls=['https://cdn.jsdelivr.net/npm/@trystero-p2p/torrent@0.25.2/+esm','https://esm.sh/@trystero-p2p/torrent@0.25.2','https://esm.run/@trystero-p2p/torrent@0.25.2'];
+    for(const u of urls){
+      try{const mod=await import(u);if(typeof mod.joinRoom==='function'){joinRoom=mod.joinRoom;break;}}
+      catch(err){lastErr=err;}
+    }
+    if(!joinRoom)throw lastErr||new Error('joinRoom missing');
     trysteroRoom=joinRoom({appId:'claude-arena-brawl-3d-v1'},code);
-    const[ss,gs]=trysteroRoom.makeAction('state');
-    const[sh,gh]=trysteroRoom.makeAction('shoot');
+    // Trystero >=0.25 returns action objects ({send,onMessage}); older versions returned [send,receive] arrays - support both
+    const mkAction=name=>{
+      const a=trysteroRoom.makeAction(name);
+      if(Array.isArray(a))return{send:(d)=>{try{const r=a[0](d);if(r&&r.catch)r.catch(()=>{});}catch(e){}},listen:fn=>a[1](fn)};
+      return{
+        send:(d)=>{try{const r=a.send(d);if(r&&r.catch)r.catch(()=>{});}catch(e){}},
+        listen:fn=>{a.onMessage=(data,meta)=>fn(data,(meta&&typeof meta==='object')?meta.peerId:meta);}
+      };
+    };
+    const stA=mkAction('state'),shA=mkAction('shoot');
+    const ss=stA.send,gs=stA.listen,sh=shA.send,gh=shA.listen;
     sendStateAction=ss;sendShootAction=sh;
     gs((data,peerId)=>{
       if(!mpMode)return;
@@ -832,6 +845,7 @@ async function connectMultiplayer(code){
       if(typeof data.y==='number')rp.y=data.y;
       if(typeof data.angle==='number')rp.angle=data.angle;
       if(typeof data.hp==='number')rp.hp=data.hp;
+      if(typeof data.maxHp==='number'&&data.maxHp>0)rp.maxHp=data.maxHp;
       if(typeof data.team==='number')rp.team=data.team;
       rp.alive=data.alive!==false;
       rp.hidden=!!data.hidden;
@@ -843,11 +857,13 @@ async function connectMultiplayer(code){
       const colorHex=typeof data.colorHex==='number'?data.colorHex:0xaaaaaa;
       fireProjectile({x:data.x,y:data.y,r:16},data.angle,'mp:'+peerId,data.dmg||22,'#fff',colorHex);
     });
-    trysteroRoom.onPeerLeave(peerId=>{
+    const onLeave=peerId=>{
       if(remotePlayers[peerId]){dynGroup.remove(remotePlayers[peerId].mesh);delete remotePlayers[peerId];}
-    });
+    };
+    trysteroRoom.onPeerLeave=onLeave;
     return true;
   }catch(e){
+    console.error('Multiplayer:',e);window.__mpErr=String(e&&e.message||e);
     trysteroRoom=null;sendStateAction=null;sendShootAction=null;
     return false;
   }
@@ -857,7 +873,7 @@ function mpStateTick(dt){
   presenceAcc+=dt;
   if(presenceAcc>0.12){
     presenceAcc=0;
-    try{sendStateAction({x:Math.round(player.x),y:Math.round(player.y),angle:Math.round(player.angle*100)/100,hp:Math.max(0,Math.round(player.hp)),alive:player.alive,hidden:player.hidden,colorHex:myColorHex,shape:player.shape,team:player.team});}catch(e){}
+    try{sendStateAction({x:Math.round(player.x),y:Math.round(player.y),angle:Math.round(player.angle*100)/100,hp:Math.max(0,Math.round(player.hp)),maxHp:Math.round(player.maxHp),alive:player.alive,hidden:player.hidden,colorHex:myColorHex,shape:player.shape,team:player.team});}catch(e){}
   }
 }
 function mpSyncPeers(){
@@ -1184,7 +1200,7 @@ btnMPJoin.addEventListener('click',async()=>{
   btnMPJoin.disabled=false;btnMPJoin.textContent='Beitreten';
   if(!ok){
     mpErrorEl.style.display='block';
-    mpErrorEl.textContent='Verbindung fehlgeschlagen. Entweder fehlt eine Internetverbindung, oder Peer-to-Peer-Netzwerke sind in dieser Vorschau eingeschränkt — auf einer eigenen Seite (z. B. GitHub Pages) funktioniert es.';
+    mpErrorEl.textContent='Verbindung fehlgeschlagen. Entweder fehlt eine Internetverbindung, oder Peer-to-Peer-Netzwerke sind in dieser Vorschau eingeschränkt — auf einer eigenen Seite (z. B. GitHub Pages) funktioniert es.'+(window.__mpErr?' (Fehler: '+window.__mpErr+')':'');
     return;
   }
   mpJoin.style.display='none';mpErrorEl.style.display='none';
